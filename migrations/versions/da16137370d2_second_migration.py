@@ -7,7 +7,8 @@ Create Date: 2022-11-05 17:03:00.116447
 """
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy import create_engine, MetaData, Table, Column, String
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'da16137370d2'
@@ -15,15 +16,27 @@ down_revision = 'cbb1f6f5ea7b'
 branch_labels = None
 depends_on = None
 
+engine = create_engine("postgresql://postgres:qwerty@localhost:5432/test")
+
+meta_data = MetaData()
+
+book_1 = Table(
+    "book_1",
+    meta_data,
+    Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+    Column('title', sa.String(length=70), nullable=True),
+    Column("email_address", String(60)),
+    Column('author', sa.String(length=70), nullable=True),
+)
+
 
 def upgrade():
-    op.add_column('book', sa.Column('publication_house', sa.String(length=70), nullable=True))
-    op.execute('UPDATE book SET publication_house = author, author = Null;')
+    meta_data.create_all(engine)
+    meta_data.bind(book)
 
 
 def downgrade():
-    op.execute('UPDATE book SET author = publication_house')
-    op.drop_column('book', 'publication_house')
+    meta_data.drop_all(engine)
 
 
 # native
